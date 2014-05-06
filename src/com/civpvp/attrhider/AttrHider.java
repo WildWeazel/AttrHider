@@ -1,7 +1,21 @@
 package com.civpvp.attrhider;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Damageable;
+import org.bukkit.entity.EnderDragon;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Wither;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,6 +23,7 @@ import com.comphenix.protocol.*;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.reflect.FieldAccessException;
 import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 
 /**
  * Uses ProtocolLib to strip away stuff that should never have been sent in the first place
@@ -16,12 +31,13 @@ import com.comphenix.protocol.reflect.StructureModifier;
  * @author Squeenix
  *
  */
-public class AttrHider extends JavaPlugin {
+public class AttrHider extends JavaPlugin implements Listener {
 	private ProtocolManager protocolManager;
 
 	@Override
 	public void onEnable() {
 	    registerPacketListeners();
+	    Bukkit.getPluginManager().registerEvents(this, this);
 	}
 	
 	private void registerPacketListeners(){
@@ -60,6 +76,38 @@ public class AttrHider extends JavaPlugin {
 	    		}
 	    	}
 	    });
+	    
+	    //Make health random
+	    
+	    ProtocolLibrary.getProtocolManager().addPacketListener(
+	    	      new PacketAdapter(this, ListenerPriority.NORMAL, new PacketType[] { PacketType.Play.Server.ENTITY_METADATA }) {
+	    	      public void onPacketSending(PacketEvent event) {
+	    	        try {
+	    	          Player observer = event.getPlayer();
+	    	          StructureModifier entityModifer = event.getPacket().getEntityModifier(observer.getWorld());
+	    	          Entity entity = (Entity)entityModifer.read(0);
+	    	          if ((entity != null) && (observer != entity) && ((entity instanceof LivingEntity)) && 
+	    	            ((!(entity instanceof EnderDragon)) || (!(entity instanceof Wither))) && (
+	    	            (entity.getPassenger() == null) || (entity.getPassenger() != observer))) {
+	    	            event.setPacket(event.getPacket().deepClone());
+	    	            StructureModifier watcher = event.getPacket()
+	    	              .getWatchableCollectionModifier();
+	    	            for (WrappedWatchableObject watch : (List<WrappedWatchableObject>)watcher.read(0)) {
+	    	              if ((watch.getIndex() == 6) && 
+	    	                (((Float)watch.getValue()).floatValue() > 0.0F))
+	    	                watch.setValue(
+	    	                  Float.valueOf(new Random().nextInt((int)((Damageable)(LivingEntity)entity).getMaxHealth()) + 
+	    	                  new Random().nextFloat()));
+	    	            }
+	    	          }
+	    	        }
+	    	        catch (Exception e)
+	    	        {
+	    	          e.printStackTrace();
+	    	        }
+	    	      }
+	    	    });
+	        
 	}
 	
 	private ItemStack adjustEnchantment(ItemStack i){
@@ -117,4 +165,17 @@ public class AttrHider extends JavaPlugin {
 		}
 		return i;
 	}
+	
+	@EventHandler
+	public void onMount(final VehicleEnterEvent event) {
+		if ((event.getEntered() instanceof Player))
+			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+	        public void run() {
+	        	if ((event.getVehicle().isValid()) && (event.getEntered().isValid())) {
+	        		protocolManager.updateEntity(event.getVehicle(), Arrays.asList(new Player[] { (Player)event.getEntered() }));
+	        	}
+	        }
+		});
+	}
 }
+
