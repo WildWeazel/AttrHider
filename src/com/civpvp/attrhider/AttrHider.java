@@ -77,7 +77,7 @@ public class AttrHider extends JavaPlugin implements Listener {
 	    	}
 	    });
 	    
-	    //Make health random
+	    //Make reported health random
 	    
 	    ProtocolLibrary.getProtocolManager().addPacketListener(
 	    	      new PacketAdapter(this, ListenerPriority.NORMAL, new PacketType[] { PacketType.Play.Server.ENTITY_METADATA }) {
