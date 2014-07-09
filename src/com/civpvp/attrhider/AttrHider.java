@@ -96,7 +96,7 @@ public class AttrHider extends JavaPlugin implements Listener {
 	    	              if ((watch.getIndex() == 6) && 
 	    	                (((Float)watch.getValue()).floatValue() > 0.0F))
 	    	                watch.setValue(
-	    	                  Float.valueOf(new Random().nextInt((int)((Damageable (LivingEntity))entity).getMaxHealth()) +
+	    	                  Float.valueOf(new Random().nextInt((int)(Damageable (LivingEntity)entity).getMaxHealth()) +
 	    	                  new Random().nextFloat()));
 	    	            }
 	    	          }
