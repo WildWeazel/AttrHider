@@ -19,7 +19,6 @@
           <configuration>
             <source>1.7</source>
             <target>1.7</target>
-            <compilerArgument></compilerArgument>
           </configuration>
         </plugin>
       </plugins>
@@ -41,7 +40,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.7.2</version>
+      <version>1.7.2-R0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -53,9 +52,8 @@
   
   <repositories>
     <repository>
-      <id>lib</id>
-      <name>lib</name>
-      <url>${project.baseUri}lib</url>
+      <id>bukkit-repo</id>
+      <url>http://repo.bukkit.org/content/groups/public/</url>
     </repository>
     <repository>
       <id>comphenix-rep</id>
